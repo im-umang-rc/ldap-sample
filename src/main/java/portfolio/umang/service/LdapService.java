@@ -5,10 +5,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class LdapService {
 
@@ -27,35 +24,39 @@ public class LdapService {
         return Arrays.asList(connectionProperties.getProperty("servers").split(","));
     }
 
+    public static String getProperty(String key) {
+        return connectionProperties.getProperty(key);
+    }
 
-    public static boolean isUserLocked(String target, String uid) throws NamingException {
+    public static Map<String, Boolean> getUserStatus(String target, String searchString) throws NamingException {
         Hashtable<String, String> environment = new Hashtable<>();
         environment.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        environment.put(Context.PROVIDER_URL, connectionProperties.getProperty(target + ".url"));
+        environment.put(Context.PROVIDER_URL, getProperty(target + ".url"));
         environment.put(Context.SECURITY_AUTHENTICATION, "simple");
-        environment.put(Context.SECURITY_PRINCIPAL, connectionProperties.getProperty(target + ".user"));
-        environment.put(Context.SECURITY_CREDENTIALS, connectionProperties.getProperty(target + ".pwd"));
+        environment.put(Context.SECURITY_PRINCIPAL, getProperty(target + ".user"));
+        environment.put(Context.SECURITY_CREDENTIALS, getProperty(target + ".pwd"));
         DirContext context = null;
+        Map<String, Boolean> userStatus = new HashMap<>();
         try {
             context = new InitialDirContext(environment);
 
-            String filter = "(&(objectClass=" + connectionProperties.getProperty(target + ".obj") + ")" +
-                    "(" + connectionProperties.getProperty(target + ".id") + "=" + uid + "))";
-            String[] attrIDs = {"pwdAccountLockedTime"};
+            String[] attrIDs = {getProperty(target + ".id"), getProperty(target + ".lockAttr")};
             SearchControls searchControls = new SearchControls();
             searchControls.setReturningAttributes(attrIDs);
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
             NamingEnumeration<SearchResult> searchResults
-                    = context.search(connectionProperties.getProperty(target + ".base"), filter, searchControls);
+                    = context.search(getProperty(target + ".base"), searchString, searchControls);
 
-            if (searchResults.hasMore()) {
+            while (searchResults.hasMore()) {
                 SearchResult result = (SearchResult) searchResults.next();
                 Attributes attrs = result.getAttributes();
-                return attrs.get("pwdAccountLockedTime") != null;
-            } else return false;
+                userStatus.put(attrs.get(getProperty(target + ".id")).get().toString(), attrs.get(getProperty(target + ".lockAttr")) != null);
+            }
+            return userStatus;
         } finally {
             if (context != null) context.close();
+
         }
     }
 }
