@@ -1,0 +1,82 @@
+version: '2'
+
+networks:
+  my-network:
+    driver: bridge
+
+services:
+  ldap-1:
+    image: apacheds:22
+    ports:
+      - '1389:10389'
+    networks:
+      - my-network
+    volumes:
+      - 'ldap-1-data:/ads'
+  ldap-2:
+    image: apacheds:22
+    ports:
+      - '2389:10389'
+    networks:
+      - my-network
+    volumes:
+      - 'ldap-2-data:/ads'
+  ldap-3:
+    image: apacheds:22
+    ports:
+      - '3389:10389'
+    networks:
+      - my-network
+    volumes:
+      - 'ldap-3-data:/ads'
+  ldap-4:
+    image: apacheds:22
+    ports:
+      - '4389:10389'
+    networks:
+      - my-network
+    volumes:
+      - 'ldap-4-data:/ads'
+  ldap-5:
+    image: apacheds:22
+    ports:
+      - '5389:10389'
+    networks:
+      - my-network
+    volumes:
+      - 'ldap-5-data:/ads'
+  ldap-6:
+    image: apacheds:22
+    ports:
+      - '6389:10389'
+    networks:
+      - my-network
+    volumes:
+      - 'ldap-6-data:/ads'
+  ldap-7:
+    image: apacheds:22
+    ports:
+      - '7389:10389'
+    networks:
+      - my-network
+    volumes:
+      - 'ldap-7-data:/ads'
+#  myapp:
+#    image: 'YOUR_APPLICATION_IMAGE'
+#    networks:
+#      - my-network
+volumes:
+  ldap-1-data:
+    driver: local
+  ldap-2-data:
+    driver: local
+  ldap-3-data:
+    driver: local
+  ldap-4-data:
+    driver: local
+  ldap-5-data:
+    driver: local
+  ldap-6-data:
+    driver: local
+  ldap-7-data:
+    driver: local
